@@ -10,14 +10,6 @@ var fs    = require('fs'),
     server_start = './httpd/start',
     config;
 
-  /*Object.size = function(obj) {
-    var size = 0, key;
-    for (key in obj) {
-      if (obj.hasOwnProperty(key)) size++;
-    }
-    return size;
-  };*/
-
   function serverTask(error, stdout, stderr) {
     if (stdout) {
       sys.puts(stdout);
@@ -26,7 +18,7 @@ var fs    = require('fs'),
     } else if (error) {
       sys.puts(error);
     }
-    console.log('The Command: ' + stdout + " Should Have Executed.")
+    console.log('The Command: ' + stdout + " Should Have Executed.");
   }
 
   function isValidFile(value, regex_array) {
@@ -73,21 +65,21 @@ var fs    = require('fs'),
           //exec(server_stop, serverTask);
           exec(server_start, serverTask);
         }
-      })
+      });
 
       monitor.on("changed", function (f, curr, prev) {
         console.log('Perl file has been changed');
         //exec(server_stop, serverTask);
         exec(server_start, serverTask);
-      })
+      });
 
       monitor.on("removed", function (f, stat) {
         delete monitor.files[f];
         console.log('Perl file has been removed');
         //exec(server_stop, serverTask);
         exec(server_start, serverTask);
-      })
-    })
+      });
+    });
 
     // JS
     watch.createMonitor(js_path, function (monitor) {
@@ -106,18 +98,18 @@ var fs    = require('fs'),
           //console.log('JS File has been created');
           exec(code_min, serverTask);
         }
-      })
+      });
 
       monitor.on("changed", function (f, curr, prev) {
         //console.log('JS File has been changed');
         exec(code_min, serverTask);
-      })
+      });
 
       monitor.on("removed", function (f, stat) {
         //console.log('JS File has been removed');
         exec(code_min, serverTask);
-      })
-    })
+      });
+    });
 
     // CSS
     watch.createMonitor(css_path, function (monitor) {
@@ -133,22 +125,22 @@ var fs    = require('fs'),
       monitor.on("created", function (f, stat) {
         console.log('CSS File has been created');
         exec(code_min, serverTask);
-      })
+      });
 
       monitor.on("changed", function (f, curr, prev) {
         console.log('CSS File has been changed');
         exec(code_min, serverTask);
-      })
+      });
 
       monitor.on("removed", function (f, stat) {
         console.log('CSS File has been removed');
         exec(code_min, serverTask);
-      })
-    })
+      });
+    });
 
   }
 
   //exec('newgrp msfleet', serverTask );
-  exec(server_start, serverTask);
+  //exec(server_start, serverTask);
   config = JSON.parse(fs.readFileSync('./config/msc-task-runner.json'), 'utf8');
   monitor(config);
