@@ -1,0 +1,10 @@
+{
+  "username":"aaron",
+  "perl_path":"/home/aaron/test_dir/perl/",
+  "javascript_path": "/home/aaron/test_dir/js/",
+  "css_path": "/home/aaron/test_dir/css/",
+  "logfile": "/home/aaron/test_dir/log/session.log",
+  "group":"msfleet",
+  "timer":"2",
+  "minify": "pwd"
+}
