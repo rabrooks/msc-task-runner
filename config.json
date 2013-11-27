@@ -1,10 +1,11 @@
 {
-  "username":"aaron",
-  "perl_path":"/home/aaron/test_dir/perl/",
-  "javascript_path": "/home/aaron/test_dir/js/",
-  "css_path": "/home/aaron/test_dir/css/",
-  "logfile": "/home/aaron/test_dir/log/session.log",
-  "group":"msfleet",
+  "username":"username",
+  "perl_path":"/home/username/path_to_perl-lib/perl-lib",
+  "javascript_path":"/home/username/path_to/javascript/application_full",
+  "css_path":"/home/username/path_to/application_full",
+  "group":"groupName",
   "timer":"2",
-  "minify": "pwd"
+  "minify":"fw-minify.plx -C ./config/fw-minify.xml -v",
+  "memclear":"fw-memcached.plx -C /project/msfleet/config/memcached/fleet.dev.xml -F -v"
+
 }
