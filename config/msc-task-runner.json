@@ -1,0 +1,25 @@
+{
+    "files": {
+        "perl": {
+            "path": "perl-lib",
+            "extensions": [ "pm" ]
+        },
+        "js": {
+            "path": "web/htdocs/https/javascript/application_full",
+            "extensions": [ ".js$", ".coffee$" ]
+        },
+        "css": {
+            "path": "web/htdocs/https/style/application_full",
+            "extensions": [ "css", "scss", "sass", "less" ]
+        }
+    },
+
+    "options": {
+        "timer": "2"
+    },
+
+    "commands": {
+        "minify": "fw-minify.plx -C config/fw-minify.xml",
+        "memclear": "fw-memcached.plx -C /project/msfleet/config/memcached/fleet.dev.xml -F -v"
+    }
+}
