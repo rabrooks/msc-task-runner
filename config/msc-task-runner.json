@@ -10,7 +10,7 @@
         },
         "css": {
             "path": "web/htdocs/https/style/application_full",
-            "extensions": [ "css", "scss", "sass", "less" ]
+            "extensions": [ "css$", "scss$", "sass$", "less$" ]
         }
     },
 
@@ -20,6 +20,9 @@
 
     "commands": {
         "minify": "fw-minify.plx -C config/fw-minify.xml",
-        "memclear": "fw-memcached.plx -C /project/msfleet/config/memcached/fleet.dev.xml -F -v"
+        "memclear": "fw-memcached.plx -C /project/msfleet/config/memcached/fleet.dev.xml -F -v",
+        "server_stop": "for i in $(ps -fu $USER | grep httpd | grep -v grep |  awk '{print $2}'); do kill -9 $i; done",
+        "server_start": "httpd/start",
+        "watch_log": "tail -F httpd/logs/error_log"
     }
 }
