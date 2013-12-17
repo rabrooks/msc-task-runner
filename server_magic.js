@@ -1,13 +1,7 @@
-/* TODO: make a restart apache function that will kill the current running process and start a new one
-         ***** we could do this maybe? *****
-            for i in $(ps -fu $USER | grep httpd | grep -v grep |  awk '{print $2}'); do kill -9 $i; done
-*/
-
 var fs    = require('fs'),
     sys   = require('sys'),
     exec  = require('child_process').exec,
     watch = require(__dirname + '/watch/main.js'),
-    server_start = './httpd/start',
     config;
 
   function serverTask(error, stdout, stderr) {
@@ -18,7 +12,6 @@ var fs    = require('fs'),
     } else if (error) {
       sys.puts(error);
     }
-    console.log('The Command: ' + stdout + " Should Have Executed.");
   }
 
   function isValidFile(value, regex_array) {
@@ -62,22 +55,28 @@ var fs    = require('fs'),
         if ( isValidFile(f, config.files.perl.extensions) ) {
           monitor.files[f] = stat;
           console.log('Perl file has been created');
-          //exec(server_stop, serverTask);
-          exec(server_start, serverTask);
+          console.log(config.commands.server_stop);
+          //exec(config.commands.server_stop, serverTask);
+          console.log(config.commands.server_start);
+          //exec(config.commands.server_start, serverTask);
         }
       });
 
       monitor.on("changed", function (f, curr, prev) {
         console.log('Perl file has been changed');
-        //exec(server_stop, serverTask);
-        exec(server_start, serverTask);
+          console.log(config.commands.server_stop);
+          exec(config.commands.server_stop, serverTask);
+          setTimeout((function() {
+            console.log(config.commands.server_start);
+              exec(config.commands.server_start, serverTask);
+          }), 2000);
       });
 
       monitor.on("removed", function (f, stat) {
         delete monitor.files[f];
         console.log('Perl file has been removed');
-        //exec(server_stop, serverTask);
-        exec(server_start, serverTask);
+        exec(config.commands.server_stop, serverTask);
+        exec(config.commands.server_start, serverTask);
       });
     });
 
@@ -95,18 +94,18 @@ var fs    = require('fs'),
       monitor.on("created", function (f, stat) {
         if ( isValidFile(f, config.files.js.extensions) ) {
           monitor.files[f] = stat;
-          //console.log('JS File has been created');
+          console.log(f + ' has been created');
           exec(code_min, serverTask);
         }
       });
 
       monitor.on("changed", function (f, curr, prev) {
-        //console.log('JS File has been changed');
+        console.log(f + ' has been changed');
         exec(code_min, serverTask);
       });
 
       monitor.on("removed", function (f, stat) {
-        //console.log('JS File has been removed');
+        console.log(f + ' has been removed');
         exec(code_min, serverTask);
       });
     });
@@ -123,17 +122,20 @@ var fs    = require('fs'),
       }
 
       monitor.on("created", function (f, stat) {
-        console.log('CSS File has been created');
+        console.log(f + ' has been created');
+        console.log(monitor.files);
         exec(code_min, serverTask);
       });
 
       monitor.on("changed", function (f, curr, prev) {
-        console.log('CSS File has been changed');
+        console.log(f + ' has been changed');
+        console.log(monitor.files);
         exec(code_min, serverTask);
       });
 
       monitor.on("removed", function (f, stat) {
-        console.log('CSS File has been removed');
+        console.log(f + ' has been removed');
+        console.dir(monitor.files);
         exec(code_min, serverTask);
       });
     });
@@ -144,3 +146,4 @@ var fs    = require('fs'),
   //exec(server_start, serverTask);
   config = JSON.parse(fs.readFileSync('./config/msc-task-runner.json'), 'utf8');
   monitor(config);
+  exec(config.commands.watch_log, serverTask);
