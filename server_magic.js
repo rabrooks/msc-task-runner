@@ -1,5 +1,6 @@
 var fs    = require('fs'),
     sys   = require('sys'),
+    spawn = require('child_process').spawn,
     exec  = require('child_process').exec,
     watch = require(__dirname + '/watch/main.js'),
     config;
@@ -13,6 +14,23 @@ var fs    = require('fs'),
       sys.puts(error);
     }
   }
+
+  function spawnTask() {
+    //TODO Move this path to the JSON file
+    var tail = spawn('tail', ['-F', '-n', '0', 'httpd/logs/error_log']);
+    tail.stdout.on('data', function (data) {
+      console.log('stdout: ' + data);
+    });
+
+    tail.stderr.on('data', function (data) {
+      console.log('stderr: ' + data);
+    });
+
+    tail.on('close', function (code) {
+      console.log('Tail process exited with code ' + code);
+    });
+  }
+
 
   function isValidFile(value, regex_array) {
     var regex, regex_obj;
@@ -42,108 +60,48 @@ var fs    = require('fs'),
         css_path  = config.files.css.path;
 
     // Perl
-    watch.createMonitor(perl_path, function (monitor) {
-      monitor.files[perl_path];
-
-      // purge any files that don't match the user's desired extension set
-      if ( typeof config.files.perl.extensions === 'object' ) {
-          monitor.files = filterFiles( monitor.files,
-                          config.files.perl.extensions );
+    watch.watchTree(perl_path, function (f, curr, prev) {
+      if (typeof f == 'object' && prev === null && curr == null) {
+        // Finished Waling the tree
+      } else {
+        exec(config.commands.server_stop, serverTask);
+        exec(config.commands.server_clean, serverTask);
+        console.log(config.commands.server_start);
+        exec(config.commands.server_start, serverTask);
+        spawnTask();
       }
 
-      monitor.on("created", function (f, stat) {
-        if ( isValidFile(f, config.files.perl.extensions) ) {
-          monitor.files[f] = stat;
-          console.log('Perl file has been created');
-          console.log(config.commands.server_stop);
-          //exec(config.commands.server_stop, serverTask);
-          console.log(config.commands.server_start);
-          //exec(config.commands.server_start, serverTask);
-        }
-      });
-
-      monitor.on("changed", function (f, curr, prev) {
-        console.log('Perl file has been changed');
-          console.log(config.commands.server_stop);
-          exec(config.commands.server_stop, serverTask);
-          setTimeout((function() {
-            console.log(config.commands.server_start);
-              exec(config.commands.server_start, serverTask);
-          }), 2000);
-      });
-
-      monitor.on("removed", function (f, stat) {
-        delete monitor.files[f];
-        console.log('Perl file has been removed');
-        exec(config.commands.server_stop, serverTask);
-        exec(config.commands.server_start, serverTask);
-      });
     });
 
     // JS
-    watch.createMonitor(js_path, function (monitor) {
-      var code_min = config.commands.minify;
-      monitor.files[js_path];
-
-      // purge any files that don't match the user's desired extension set
-      if ( typeof config.files.js.extensions === 'object' ) {
-        monitor.files = filterFiles( monitor.files,
-                                config.files.js.extensions );
-      }
-
-      monitor.on("created", function (f, stat) {
-        if ( isValidFile(f, config.files.js.extensions) ) {
-          monitor.files[f] = stat;
-          console.log(f + ' has been created');
+    watch.watchTree(js_path, function (f, curr, prev) {
+      if (typeof f == 'object' && prev === null && curr == null) {
+        // Finished Waling the tree
+      } else if (curr.nlink === 0) {
+          console.log(f + ' has been removed');
+      } else {
+          console.log(f + ' has been changed');
           exec(code_min, serverTask);
-        }
-      });
-
-      monitor.on("changed", function (f, curr, prev) {
-        console.log(f + ' has been changed');
-        exec(code_min, serverTask);
-      });
-
-      monitor.on("removed", function (f, stat) {
-        console.log(f + ' has been removed');
-        exec(code_min, serverTask);
-      });
+      }
     });
 
     // CSS
-    watch.createMonitor(css_path, function (monitor) {
-      var code_min = config.commands.minify ;
-      monitor.files[css_path]
-
-      // purge any files that don't match the user's desired extension set
-      if ( typeof config.files.css.extensions === 'object' ) {
-          monitor.files = filterFiles( monitor.files,
-                          config.files.css.extensions );
-      }
-
-      monitor.on("created", function (f, stat) {
-        console.log(f + ' has been created');
-        console.log(monitor.files);
-        exec(code_min, serverTask);
-      });
-
-      monitor.on("changed", function (f, curr, prev) {
+    watch.watchTree(css_path, function (f, curr, prev) {
+      if (typeof f == 'object' && prev === null && curr == null) {
+        // Finished Waling the tree
+      } else if (curr.nlink === 0) {
+          console.log(f + ' has been removed');
+      } else {
         console.log(f + ' has been changed');
-        console.log(monitor.files);
         exec(code_min, serverTask);
-      });
-
-      monitor.on("removed", function (f, stat) {
-        console.log(f + ' has been removed');
-        console.dir(monitor.files);
-        exec(code_min, serverTask);
-      });
+      }
     });
 
   }
 
-  //exec('newgrp msfleet', serverTask );
-  //exec(server_start, serverTask);
+
   config = JSON.parse(fs.readFileSync('./config/msc-task-runner.json'), 'utf8');
   monitor(config);
-  exec(config.commands.watch_log, serverTask);
+  exec('newgrp msfleet', serverTask );
+  exec(config.commands.server_start, serverTask);
+  spawnTask();

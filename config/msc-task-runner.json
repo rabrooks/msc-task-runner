@@ -2,7 +2,7 @@
     "files": {
         "perl": {
             "path": "perl-lib",
-            "extensions": [ "pm" ]
+            "extensions": [ ".pm$", ".pl$" ]
         },
         "js": {
             "path": "web/htdocs/https/javascript/application_full",
@@ -22,7 +22,8 @@
         "minify": "fw-minify.plx -C config/fw-minify.xml",
         "memclear": "fw-memcached.plx -C /project/msfleet/config/memcached/fleet.dev.xml -F -v",
         "server_stop": "for i in $(ps -fu $USER | grep httpd | grep -v grep |  awk '{print $2}'); do kill -9 $i; done",
+        "server_clean": "for y in $(ps -fu $USER | grep tail | grep -v grep |  awk '{print $2}'); do kill -9 $y; done",
         "server_start": "httpd/start",
-        "watch_log": "tail -F httpd/logs/error_log"
+        "apache_log": "httpd/logs/error_log"
     }
 }
